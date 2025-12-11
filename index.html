@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Delta / Xeno / Solara – Script Executors</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg-main: #020617;
+      --bg-card: #020818;
+      --accent: #06b6d4;
+      --accent-soft: rgba(56,189,248,0.15);
+      --accent-strong: #22d3ee;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --border-subtle: #1e293b;
+      --radius-lg: 18px;
+      --shadow-soft: 0 18px 45px rgba(15,23,42,0.9);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top left, #022c3a 0, #020617 40%, #000 100%);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+    }
+
+    .page {
+      width: min(1200px, 96vw);
+      padding: 20px 0 32px;
+    }
+
+    /* NAVBAR */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 26px;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: radial-gradient(circle at 30% 0, #22d3ee, #0f172a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 18px rgba(34,211,238,0.9);
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    .brand-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .nav-center {
+      display: flex;
+      gap: 18px;
+      font-size: 0.9rem;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      position: relative;
+      padding-bottom: 3px;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .nav-link:hover {
+      color: var(--text-main);
+    }
+
+    .nav-link.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .nav-item {
+      position: relative;
+    }
+
+    .nav-link-arrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-link-arrow span.arrow {
+      font-size: 0.75rem;
+    }
+
+    .nav-dropdown {
+      position: absolute;
+      top: 140%;
+      left: 0;
+      min-width: 180px;
+      background: #020819;
+      border-radius: 14px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 18px 40px rgba(15,23,42,0.95);
+      padding: 8px 0;
+      display: none;
+      z-index: 20;
+    }
+
+    .nav-item:hover .nav-dropdown {
+      display: block;
+    }
+
+    .nav-dropdown a {
+      display: block;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nav-dropdown a:hover {
+      background: rgba(15,23,42,0.9);
+      color: var(--accent-strong);
+    }
+
+    @media (max-width: 760px) {
+      .nav-center {
+        display: none;
+      }
+    }
+
+    /* HERO */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+      gap: 26px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 880px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hero-left {
+      padding: 22px 22px 20px;
+      background: linear-gradient(135deg, rgba(15,23,42,0.96), rgba(15,23,42,0.98));
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(15,23,42,1);
+      border: 1px solid rgba(45,212,191,0.35);
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .hero-pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 10px rgba(34,197,94,0.9);
+    }
+
+    .hero-title {
+      font-size: clamp(2.1rem, 3.2vw, 2.7rem);
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+
+    .hero-title span.accent {
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 430px;
+      margin-bottom: 18px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .btn-primary {
+      padding: 9px 16px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent);
+      color: #020617;
+      box-shadow: 0 0 18px rgba(34,211,238,0.8);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
+
+    .hero-update {
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(15,23,42,1);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .hero-update-pill {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: var(--accent-strong);
+    }
+
+    .hero-right {
+      padding: 18px 18px 16px;
+      background: radial-gradient(circle at top left, rgba(15,23,42,0.96), rgba(15,23,42,1));
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .hero-right-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+      color: var(--text-muted);
+    }
+
+    .traffic-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+    }
+    .dot.red { background: #f97373; }
+    .dot.yellow { background: #facc15; }
+    .dot.green { background: #4ade80; }
+
+    .code-box {
+      background: #020617;
+      border-radius: 12px;
+      padding: 12px 14px;
+      border: 1px solid #0f172a;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.78rem;
+      color: #e5e7eb;
+    }
+
+    .code-line {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 2px;
+    }
+
+    .code-line span.number {
+      width: 22px;
+      text-align: right;
+      color: #4b5563;
+      user-select: none;
+    }
+
+    .code-line span.content {
+      white-space: pre;
+    }
+
+    .code-comment { color: #6ee7b7; }
+    .code-func { color: #38bdf8; }
+    .code-str { color: #fb7185; }
+    .code-key { color: #eab308; }
+
+    /* STATS */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+
+    @media (max-width: 720px) {
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      padding: 14px 16px;
+      box-shadow: 0 10px 25px rgba(15,23,42,0.8);
+      font-size: 0.8rem;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: var(--accent);
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .stat-note {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* EXECUTOR CARDS */
+    .executors {
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .executor-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 960px) {
+      .executor-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 640px) {
+      .executor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .executor-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 35px rgba(15,23,42,0.9);
+    }
+
+    .executor-media {
+      background: #020617;
+      padding: 10px;
+      height: 190px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .executor-media img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+      border-radius: 12px 12px 0 0;
+      display: block;
+    }
+
+    .executor-body {
+      padding: 12px 14px 14px;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .executor-name-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .executor-name {
+      font-weight: 600;
+    }
+
+    .executor-tag {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    .executor-desc {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .executor-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .nav-download {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      color: #020617;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 0 18px rgba(34,211,238,0.8);
+      width: 100%;
+    }
+
+    .nav-download span.icon {
+      font-size: 0.95rem;
+    }
+
+    .nav-download:hover {
+      filter: brightness(1.07);
+      transform: translateY(-1px);
+    }
+
+    .executor-main-download {
+      margin-top: 10px;
+    }
+
+    /* REVIEWS */
+    .reviews {
+      margin-top: 4px;
+    }
+
+    .reviews-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .reviews-rating-total {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .reviews-star {
+      font-size: 1rem;
+      color: #facc15;
+      text-shadow: 0 0 8px rgba(250,204,21,0.8);
+    }
+
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (max-width: 960px) {
+      .reviews-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 640px) {
+      .reviews-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .review-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      padding: 10px 12px;
+      font-size: 0.8rem;
+      box-shadow: 0 12px 30px rgba(15,23,42,0.9);
+    }
+
+    .review-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .review-user {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .review-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0, #22d3ee, #111827);
+    }
+
+    .review-name {
+      font-weight: 600;
+    }
+
+    .review-stars {
+      font-size: 0.75rem;
+      color: #facc15;
+    }
+
+    .review-text {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    .review-meta {
+      margin-top: 4px;
+      font-size: 0.72rem;
+      color: #6b7280;
+    }
+
+    /* FAQ */
+    .faq {
+      margin-top: 32px;
+    }
+
+    .faq-intro {
+      margin-bottom: 10px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (max-width: 720px) {
+      .faq-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .faq-item {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      padding: 12px 14px;
+      box-shadow: 0 10px 26px rgba(15,23,42,0.9);
+      font-size: 0.85rem;
+    }
+
+    .faq-q {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .faq-a {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="page" id="top">
+    <!-- NAVBAR -->
+    <header class="nav">
+      <div class="nav-left">
+        <div class="logo-box">V</div>
+        <div class="brand-name">VXS HUB</div>
+      </div>
+
+      <nav class="nav-center">
+        <a href="#top" class="nav-link active">Home</a>
+
+        <div class="nav-item">
+          <span class="nav-link nav-link-arrow">
+            FAQ <span class="arrow">▾</span>
+          </span>
+          <div class="nav-dropdown">
+            <a href="#faq-executor">What is a script executor?</a>
+            <a href="#faq-engines">Delta / Xeno / Solara</a>
+            <a href="#faq-safety">Safety & bans</a>
+            <a href="#faq-keys">Keys & requirements</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-left">
+        <div class="hero-pill">
+          <span class="hero-pill-dot"></span>
+          Live Roblox script executors
+        </div>
+        <h1 class="hero-title">
+          VXS <span class="accent">Script Execution</span>
+        </h1>
+        <p class="hero-sub">
+          Delta, Xeno and Solara combined in a single hub. Fast execution, clean UI and
+          safe bypass for your favorite Roblox scripts.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#executors">
+            <button class="btn-primary">
+              <span>⬇ Download executors</span>
+            </button>
+          </a>
+        </div>
+
+        <div class="hero-update">
+          <div class="hero-update-pill">⚡</div>
+          <div>
+            <strong>Updated to the latest version</strong> — No key, quick attach, safe and
+            optimized for long sessions.
+          </div>
+        </div>
+      </div>
+
+      <aside class="hero-right">
+        <div class="hero-right-header">
+          <div class="traffic-dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+          <span>Lua Executor · Tab 1</span>
+        </div>
+
+        <div class="code-box">
+          <div class="code-line">
+            <span class="number">1</span>
+            <span class="content code-comment">-- VXS Hub · Delta / Xeno / Solara</span>
+          </div>
+          <div class="code-line">
+            <span class="number">2</span>
+            <span class="content"><span class="code-key">local</span> executor = <span class="code-func">require</span>(<span class="code-str">"vxs"</span>)</span>
+          </div>
+          <div class="code-line">
+            <span class="number">3</span>
+            <span class="content code-comment">-- pick your engine</span>
+          </div>
+          <div class="code-line">
+            <span class="number">4</span>
+            <span class="content">executor.config({</span>
+          </div>
+          <div class="code-line">
+            <span class="number">5</span>
+            <span class="content">  mode = <span class="code-str">"delta"</span>,</span>
+          </div>
+          <div class="code-line">
+            <span class="number">6</span>
+            <span class="content">  bypass = <span class="code-str">"hyperion"</span>,</span>
+          </div>
+          <div class="code-line">
+            <span class="number">7</span>
+            <span class="content">  ui = <span class="code-str">"solara"</span></span>
+          </div>
+          <div class="code-line">
+            <span class="number">8</span>
+            <span class="content">})</span>
+          </div>
+          <div class="code-line">
+            <span class="number">9</span>
+            <span class="content code-comment">-- run your favorite scripts</span>
+          </div>
+          <div class="code-line">
+            <span class="number">10</span>
+            <span class="content"><span class="code-key">local</span> ok = executor:<span class="code-func">execute</span>(<span class="code-str">"bloxfruits.lua"</span>)</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats">
+      <article class="stat-card">
+        <div class="stat-label">
+          <div class="stat-icon">⬇</div>
+          Total downloads
+        </div>
+        <div class="stat-value">5,713</div>
+        <div class="stat-note">Across Delta, Xeno and Solara.</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-label">
+          <div class="stat-icon">👤</div>
+          Active users
+        </div>
+        <div class="stat-value">8,131</div>
+        <div class="stat-note">Using VXS Hub in the last 24h.</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-label">
+          <div class="stat-icon">🛡</div>
+          Protection
+        </div>
+        <div class="stat-value">Hyperion</div>
+        <div class="stat-note">Optimized bypass and crash-safe attach.</div>
+      </article>
+    </section>
+
+    <!-- EXECUTOR CARDS -->
+    <section class="executors" id="executors">
+      <h2 class="section-title">Executors included</h2>
+      <div class="executor-grid">
+        <!-- DELTA -->
+        <article class="executor-card">
+          <div class="executor-media">
+            <!-- Usa aquí la imagen que me pasaste de Delta -->
+            <img src="https://raw.githubusercontent.com/21rata130ofc/Data-base-personal/main/2b2c0251ab42dad1283e0507707e5a77.jpg" alt="Delta executor" />
+          </div>
+          <div class="executor-body">
+            <div class="executor-name-row">
+              <span class="executor-name">Delta</span>
+              <span class="executor-tag">High power</span>
+            </div>
+            <p class="executor-desc">
+              Clean blue-themed executor focused on raw performance. Perfect for combat scripts
+              and fast farming.
+            </p>
+            <p class="executor-meta">
+              Attach speed: ~2s · Blox Fruits / combat scripts.
+            </p>
+
+            <div class="executor-main-download">
+              <a href="https://raw.githubusercontent.com/21rata130ofc/Data-base-personal/main/Executores.rar" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                <button class="nav-download">
+                  <span class="icon">⬇</span>
+                  <span>Download Delta</span>
+                </button>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- XENO -->
+        <article class="executor-card">
+          <div class="executor-media">
+            <img src="https://raw.githubusercontent.com/21rata130ofc/Data-base-personal/main/xeno.png" alt="Xeno executor" />
+          </div>
+          <div class="executor-body">
+            <div class="executor-name-row">
+              <span class="executor-name">Xeno</span>
+              <span class="executor-tag">Stable</span>
+            </div>
+            <p class="executor-desc">
+              Futuristic green/cyan look with advanced stability. Ideal for heavy scripts and long sessions.
+            </p>
+            <p class="executor-meta">
+              Crash-safe mode · Da Hood / big hubs.
+            </p>
+
+            <div class="executor-main-download">
+              <a href="https://raw.githubusercontent.com/21rata130ofc/Data-base-personal/main/Executores.rar" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                <button class="nav-download">
+                  <span class="icon">⬇</span>
+                  <span>Download Xeno</span>
+                </button>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- SOLARA -->
+        <article class="executor-card">
+          <div class="executor-media">
+            <img src="https://raw.githubusercontent.com/21rata130ofc/Data-base-personal/main/solara.png" alt="Solara executor" />
+          </div>
+          <div class="executor-body">
+            <div class="executor-name-row">
+              <span class="executor-name">Solara</span>
+              <span class="executor-tag">AFK friendly</span>
+            </div>
+            <p class="executor-desc">
+              Soft sunset interface focused on comfort and low usage. Perfect for AFK farming and idle scripts.
+            </p>
+            <p class="executor-meta">
+              Low resource usage · AFK / macro scripts.
+            </p>
+
+            <div class="executor-main-download">
+              <a href="https://raw.githubusercontent.com/21rata130ofc/Data-base-personal/main/Executores.rar" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                <button class="nav-download">
+                  <span class="icon">⬇</span>
+                  <span>Download Hub (Solara)</span>
+                </button>
+              </a>
+            </div>
+
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section class="reviews">
+      <div class="reviews-header">
+        <h2 class="section-title">User reviews</h2>
+        <div class="reviews-rating-total">
+          <span class="reviews-star">★★★★★</span>
+          <span>4.9 / 5 · Based on community feedback</span>
+        </div>
+      </div>
+
+      <div class="reviews-grid">
+        <article class="review-card">
+          <div class="review-top">
+            <div class="review-user">
+              <div class="review-avatar"></div>
+              <div class="review-name">BlazeExecutor</div>
+            </div>
+            <div class="review-stars">★★★★★</div>
+          </div>
+          <p class="review-text">
+            Delta attaches insanely fast. I use it for Blox Fruits combos and it never freezes my
+            game. Pure power.
+          </p>
+          <p class="review-meta">Delta • Blox Fruits</p>
+        </article>
+
+        <article class="review-card">
+          <div class="review-top">
+            <div class="review-user">
+              <div class="review-avatar"></div>
+              <div class="review-name">ZenX</div>
+            </div>
+            <div class="review-stars">★★★★☆</div>
+          </div>
+          <p class="review-text">
+            Xeno is my go-to for big script hubs on Da Hood. Super stable and the UI feels really
+            clean to use.
+          </p>
+          <p class="review-meta">Xeno • Da Hood</p>
+        </article>
+
+        <article class="review-card">
+          <div class="review-top">
+            <div class="review-user">
+              <div class="review-avatar"></div>
+              <div class="review-name">SolLight</div>
+            </div>
+            <div class="review-stars">★★★★★</div>
+          </div>
+          <p class="review-text">
+            Solara is perfect for AFK farms. I can leave it running for hours and it keeps scripts
+            stable without overheating.
+          </p>
+          <p class="review-meta">Solara • AFK Scripts</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+      <h2 class="section-title">FAQ · Roblox executors</h2>
+      <p class="faq-intro">
+        Basic questions about what executors are, how they work and what you should keep in mind
+        when using Delta, Xeno or Solara.
+      </p>
+
+      <div class="faq-grid">
+        <article class="faq-item" id="faq-executor">
+          <h3 class="faq-q">What is a Roblox script executor?</h3>
+          <p class="faq-a">
+            A script executor is a program that attaches to Roblox and lets you run custom Lua
+            scripts in the game. With it you can load hubs, farming scripts, combat tools, visual
+            changes and more that are not part of the original game.
+          </p>
+        </article>
+
+        <article class="faq-item" id="faq-engines">
+          <h3 class="faq-q">What do Delta, Xeno and Solara change?</h3>
+          <p class="faq-a">
+            All three run Roblox scripts, but each focuses on a different style: Delta is high
+            power and fast attach, Xeno is stability and crash-safe for big hubs, and Solara is
+            light and comfortable for AFK or long sessions.
+          </p>
+        </article>
+
+        <article class="faq-item" id="faq-safety">
+          <h3 class="faq-q">Is using an executor 100% safe?</h3>
+          <p class="faq-a">
+            No executor can guarantee 0% risk. Executors modify how Roblox runs, and this can go
+            against the game&#39;s terms of service. Use them at your own risk and always download
+            from trusted links to avoid malware. There is also always a chance of bans, especially
+            in competitive or heavily moderated games.
+          </p>
+        </article>
+
+        <article class="faq-item" id="faq-keys">
+          <h3 class="faq-q">Do I need a key or something before running it?</h3>
+          <p class="faq-a">
+            VXS Hub is designed to be “no key” for a faster experience: open the executor, attach
+            and load your script or hub directly. For safety, use a clean Windows install, avoid
+            sketchy “antivirus cracks” and only keep one trusted antivirus enabled.
+          </p>
+        </article>
+
+        <article class="faq-item">
+          <h3 class="faq-q">Can I get banned for using scripts?</h3>
+          <p class="faq-a">
+            Using exploits can lead to warnings or bans. To reduce risk, don&#39;t use obvious
+            cheats in public lobbies, avoid ruining other players&#39; experience and keep your
+            executors updated so detection is lower.
+          </p>
+        </article>
+
+        <article class="faq-item">
+          <h3 class="faq-q">What games are these executors good for?</h3>
+          <p class="faq-a">
+            Delta is focused on high-power combat scripts like Blox Fruits. Xeno shines with big
+            script hubs and heavy games like Da Hood. Solara is perfect for AFK farming, simulators
+            and long idle sessions.
+          </p>
+        </article>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
